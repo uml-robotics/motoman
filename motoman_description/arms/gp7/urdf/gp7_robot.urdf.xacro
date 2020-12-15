@@ -3,10 +3,10 @@
        name="gp7" >
 
   <!-- common stuff -->
-  <xacro:include filename="$(find motoman_gp7_support)/urdf/common.gp7.xacro" />
+  <xacro:include filename="$(find motoman_description)/arms/gp7/urdf/common.gp7.xacro" />
 
   <!-- ur5e -->
-  <xacro:include filename="$(find motoman_gp7_support)/urdf/gp7.urdf.xacro" />
+  <xacro:include filename="$(find motoman_description)/arms/gp7/urdf/gp7.urdf.xacro" />
 
   <!-- arm -->
   <xacro:gp7_robot prefix="" />
