@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="sim_workstation" default="false" doc="If true, spawn robot atop simualted ARMada workstation in Gazebo world" />
+  <arg name="model" default="gp7" />
+  <arg name="gripper" default="" />
+
+  <group unless="$(arg sim_workstation)" >
+      <param unless="$(eval gripper == '')" name="robot_description" command="$(find xacro)/xacro --inorder '$(find motoman_description)/urdf/$(arg model)_robot_$(arg gripper).urdf.xacro'" />
+      <param if="$(eval gripper == '')" name="robot_description" command="$(find xacro)/xacro --inorder '$(find motoman_description)/urdf/$(arg model)_robot.urdf.xacro'" />
+  </group>
+  <group if="$(arg sim_workstation)" >
+      <param unless="$(eval gripper == '')" name="robot_description" command="$(find xacro)/xacro --inorder '$(find motoman_description)/urdf/$(arg model)_robot_$(arg gripper)_workstation.urdf.xacro'" />
+      <param if="$(eval gripper == '')" name="robot_description" command="$(find xacro)/xacro --inorder '$(find motoman_description)/urdf/$(arg model)_robot_workstation.urdf.xacro'" />
+  </group>
+
+</launch>

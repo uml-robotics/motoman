@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="paused" default="false" doc="Starts gazebo in paused mode" />
+  <arg name="gui" default="true" doc="Starts gazebo gui" />
+  <arg name="model" default="gp7" doc="Robot model: gp7 is currently the only implemented model TODO: add more models"/>
+  <arg name="sim_workstation" default="false" doc="If true, load robot in Gazebo atop simulated ARMada workstation" />
+  <arg name="gripper" default="" />
+  
+  <!-- startup simulated world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" default="worlds/empty.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="gui" value="$(arg gui)"/>
+  </include>
+
+  <!-- send robot urdf to param server -->
+  <include file="$(find motoman_description)/launch/motoman_upload.launch">
+    <arg name="model" value="$(arg model)" />
+    <arg name="sim_workstation" value="$(arg sim_workstation)" />
+    <arg name="gripper" value="$(arg gripper)" />
+  </include>
+
+  <!-- push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 0.1" respawn="false" output="screen" />
+
+  <include file="$(find motoman_gazebo)/launch/controller_utils.launch"/>
+
+  <!-- Load controller configurations -->
+  <rosparam file="$(find motoman_gazebo)/controller/arm_controller_$(arg model).yaml" command="load"/>
+  <rosparam file="$(find motoman_gazebo)/controller/grippers/$(arg gripper)/gripper_action_controller_parameters.yaml" command="load" 
+	subst_value="true" unless="$(eval not arg('gripper'))"/>
+
+  <!-- Start the trajectory controllers -->
+
+  <!-- Without gripper -->
+  <node name="$(arg model)_trajectory_controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+            output="screen" args="arm_controller"
+            if="$(eval not arg('gripper'))"/>
+
+  <!-- With gripper -->
+  <node name="$(arg model)_controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+            output="screen" args="arm_controller $(arg gripper)_gripper_controller"
+            unless="$(eval not arg('gripper'))"/>
+
+</launch>
